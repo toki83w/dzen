@@ -686,12 +686,10 @@ handle_xev(void) {
 					if(ev.xcrossing.window == dzen.slave_win.line[i])
 						x_unhilight_line(i);
 			}
-			if(!dzen.slave_win.ishmenu
-					&& ev.xcrossing.window == dzen.title_win.win)
+			if(!dzen.slave_win.ishmenu && ev.xcrossing.window == dzen.title_win.win && ev.xcrossing.mode == NotifyNormal)
 				do_action(leavetitle);
-			if(ev.xcrossing.window == dzen.slave_win.win) {
+			if(ev.xcrossing.window == dzen.slave_win.win && ev.xcrossing.mode == NotifyNormal)
 				do_action(leaveslave);
-			}
 			break;
 		case ButtonRelease:
 			if(dzen.slave_win.ismenu) {
@@ -797,6 +795,9 @@ event_loop(void) {
 
 		while(XPending(dzen.dpy))
 			handle_xev();
+
+        if (!dzen.running)
+            return;
 
 		ret = select(xfd+1, &rmask, NULL, NULL, NULL);
 		if(ret) {
