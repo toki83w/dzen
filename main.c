@@ -225,14 +225,13 @@ x_check_geometry(XRectangle scr) {
 	t->x = t->x < 0 ? scr.width  + t->x + scr.x : t->x + scr.x;
 	t->y = t->y < 0 ? scr.height + t->y + scr.y : t->y + scr.y;
 
-	if(t->x < scr.x || scr.x + scr.width < t->x)
-		t->x = scr.x;
-
 	if(!t->width)
 		t->width = scr.width;
 
-	if((t->x + t->width) > (scr.x + scr.width) && (t->expand != left))
-		t->width = scr.width - (t->x - scr.x);
+	if(t->x < scr.x)
+		t->x = scr.x;
+	else if((t->x + t->width) > (scr.x + scr.width))
+		t->x = scr.x + scr.width - t->width;
 
 	if(t->expand == left) {
 		t->x_right_corner = t->x + t->width;
