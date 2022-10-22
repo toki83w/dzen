@@ -24,7 +24,7 @@ X11LIB = /usr/X11R6/lib
 LIBS = `pkg-config --libs xft`
 CFLAGS = -Os ${INCS} -DDZEN_XFT `pkg-config --cflags xft`
 
-#LDFLAGS = ${LIBS}
+LDFLAGS = ${LIBS}
 
 # compiler and linker
 CC ?= gcc

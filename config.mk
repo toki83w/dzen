@@ -34,8 +34,8 @@ INCS = -I. -I${X11INC}
 
 
 ## Option 4: With Xinerama and XPM
-LIBS = -L${X11LIB} -lX11 -lXinerama -lXpm
-CFLAGS += -Wall -Os ${INCS} -DVERSION=\"${VERSION}\" -DDZEN_XINERAMA -DDZEN_XPM
+#LIBS = -L${X11LIB} -lX11 -lXinerama -lXpm
+#CFLAGS += -Wall -Os ${INCS} -DVERSION=\"${VERSION}\" -DDZEN_XINERAMA -DDZEN_XPM
 
 
 ## Option 5: With XFT
@@ -54,8 +54,8 @@ CFLAGS += -Wall -Os ${INCS} -DVERSION=\"${VERSION}\" -DDZEN_XINERAMA -DDZEN_XPM
 
 
 ## Option 8: With Xinerama and XPM and XFT
-#LIBS = -L${X11LIB} -lX11 -lXinerama -lXpm `pkg-config --libs xft`
-#CFLAGS += -Wall -Os ${INCS} -DVERSION=\"${VERSION}\" -DDZEN_XINERAMA -DDZEN_XPM -DDZEN_XFT `pkg-config --cflags xft`
+LIBS = -L${X11LIB} -lX11 -lXinerama -lXpm `pkg-config --libs xft`
+CFLAGS += -Wall -Os ${INCS} -DVERSION=\"${VERSION}\" -DDZEN_XINERAMA -DDZEN_XPM -DDZEN_XFT `pkg-config --cflags xft`
 
 
 
