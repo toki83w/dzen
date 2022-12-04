@@ -269,15 +269,38 @@ qsi_no_xinerama(Display *dpy, XRectangle *rect) {
 }
 
 #ifdef DZEN_XINERAMA
+static int
+resolve_screen(XineramaScreenInfo *xsi, int nscreens, int x)
+{
+	for (int i = 0; i < nscreens; ++i)
+		if (x >= xsi[i].x_org && x < xsi[i].x_org + xsi[i].width)
+			return xsi[i].screen_number + 1;
+	return 0;
+}
+
 static void
-queryscreeninfo(Display *dpy, XRectangle *rect, int screen) {
+queryscreeninfo(Display *dpy, XRectangle *rect, int screen, int x) {
 	XineramaScreenInfo *xsi = NULL;
 	int nscreens = 1;
 
 	if(XineramaIsActive(dpy))
 		xsi = XineramaQueryScreens(dpy, &nscreens);
 
-	if(xsi == NULL || screen > nscreens || screen <= 0) {
+	if (xsi && screen <= 0) {
+		screen = resolve_screen(xsi, nscreens, x);
+
+		if (screen <= 0)
+			qsi_no_xinerama(dpy, rect);
+		else {
+			// keep working in "display" coordinates, but use vertical offset and height of current screen
+			// NOTE: only works for screens arranged horizontally
+			rect->x      = 0;
+			rect->y      = xsi[screen-1].y_org;
+			rect->width  = DisplayWidth(dpy, DefaultScreen(dpy));
+			rect->height = xsi[screen-1].height;
+		}
+	}
+	else if(xsi == NULL || screen > nscreens) {
 		qsi_no_xinerama(dpy, rect);
 	}
 	else {
@@ -286,6 +309,8 @@ queryscreeninfo(Display *dpy, XRectangle *rect, int screen) {
 		rect->width  = xsi[screen-1].width;
 		rect->height = xsi[screen-1].height;
 	}
+
+	XFree(xsi);
 }
 #endif
 
@@ -330,7 +355,7 @@ set_docking_ewmh_info(Display *dpy, Window w, int dock) {
 
 	XGetWindowAttributes(dpy, w, &wa);
 #ifdef DZEN_XINERAMA
-	queryscreeninfo(dpy,&si,dzen.xinescreen);
+	queryscreeninfo(dpy,&si,dzen.xinescreen,dzen.title_win.x);
 #else
 	qsi_no_xinerama(dpy,&si);
 #endif
@@ -514,7 +539,7 @@ x_create_windows(int use_ewmh_dock) {
 	wa.event_mask = ExposureMask | ButtonReleaseMask | ButtonPressMask | ButtonMotionMask | EnterWindowMask | LeaveWindowMask | KeyPressMask;
 
 #ifdef DZEN_XINERAMA
-	queryscreeninfo(dzen.dpy, &si, dzen.xinescreen);
+	queryscreeninfo(dzen.dpy, &si, dzen.xinescreen, dzen.title_win.x);
 #else
 	qsi_no_xinerama(dzen.dpy, &si);
 #endif
