@@ -223,7 +223,6 @@ x_check_geometry(XRectangle scr) {
 	SWIN *s = &dzen.slave_win;
 
 	t->x = t->x < 0 ? scr.width  + t->x + scr.x : t->x + scr.x;
-	t->y = t->y < 0 ? scr.height + t->y + scr.y : t->y + scr.y;
 
 	if(!t->width)
 		t->width = scr.width;
@@ -255,6 +254,8 @@ x_check_geometry(XRectangle scr) {
 
 	if(!dzen.line_height)
 		dzen.line_height = dzen.font.height + 2;
+
+	t->y = t->y < 0 ? scr.height + t->y - dzen.line_height + scr.y : t->y + scr.y;
 
 	if(t->y + dzen.line_height > scr.y + scr.height)
 		t->y = scr.y + scr.height - dzen.line_height;
@@ -543,6 +544,7 @@ x_create_windows(int use_ewmh_dock) {
 #else
 	qsi_no_xinerama(dzen.dpy, &si);
 #endif
+	int ty = dzen.title_win.y;
 	x_check_geometry(si);
 
 	/* title window */
@@ -621,10 +623,18 @@ x_create_windows(int use_ewmh_dock) {
 		/* vertical slave window */
 		else {
 			dzen.slave_win.issticky = False;
-			dzen.slave_win.y = dzen.title_win.y + dzen.line_height;
 
-			if(dzen.title_win.y + dzen.line_height*dzen.slave_win.max_lines > si.y + si.height)
-				dzen.slave_win.y = (dzen.title_win.y - dzen.line_height) - dzen.line_height*(dzen.slave_win.max_lines) + dzen.line_height;
+			if(ty >= 0) {
+				dzen.slave_win.y = dzen.title_win.y + dzen.line_height;
+
+				if(dzen.title_win.y + dzen.line_height*dzen.slave_win.max_lines > si.y + si.height)
+					dzen.slave_win.y = dzen.title_win.y - dzen.line_height*dzen.slave_win.max_lines;
+			} else {
+				dzen.slave_win.y = dzen.title_win.y - dzen.line_height*dzen.slave_win.max_lines;
+
+				if(dzen.slave_win.y < si.y)
+					dzen.slave_win.y = dzen.title_win.y + dzen.line_height;
+			}
 
 			dzen.slave_win.win = XCreateWindow(dzen.dpy, root,
 					dzen.slave_win.x, dzen.slave_win.y, dzen.slave_win.width, dzen.slave_win.max_lines * dzen.line_height, 0,
@@ -649,7 +659,6 @@ x_create_windows(int use_ewmh_dock) {
 						CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
 		}
 	}
-
 }
 
 static void
